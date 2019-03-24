@@ -8,9 +8,10 @@
 			"Name": "PlatformerTemplate",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine"
-			]
+      "AdditionalDependencies": [
+        "Engine",
+        "ProceduralMeshComponent"
+      ]
 		}
 	]
 }
