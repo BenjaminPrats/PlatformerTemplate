@@ -11,7 +11,7 @@ AProceduralPlatform::AProceduralPlatform()
 	mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("GeneratedMesh"));
 	RootComponent = mesh;
 
-#if 0 // TODO: (Benjamin) https://wiki.unrealengine.com/index.php?title=Procedural_Mesh_Component_in_C%2B%2B:Getting_Started
+#if 1 // TODO: (Benjamin) https://wiki.unrealengine.com/index.php?title=Procedural_Mesh_Component_in_C%2B%2B:Getting_Started
 	// New in UE 4.17, multi-threaded PhysX cooking.
 	mesh->bUseAsyncCooking = true;
 #endif
@@ -35,7 +35,8 @@ void AProceduralPlatform::Tick(float DeltaTime)
 void AProceduralPlatform::PostActorCreated()
 {
 	Super::PostActorCreated();
-	CreateTriangle();
+	// CreateTriangle();
+	CreatePolygon();
 }
 
 // This is called when actor is already in level and map is opened
@@ -82,4 +83,16 @@ void AProceduralPlatform::CreateTriangle()
 
 	// Enable collision data
 	mesh->ContainsPhysicsTriMeshData(true);
+}
+
+void AProceduralPlatform::CreateTriangle()
+{
+	TArray<FVector> vertices;
+	vertices.Add(FVector(0, 0, 0));
+	vertices.Add(FVector(0, 100, 0));
+	vertices.Add(FVector(0, 0, 100));
+	vertices.Add(FVector(0, 100, 100));
+
+
+
 }
