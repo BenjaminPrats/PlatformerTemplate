@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
+#include "ScreenMessage.h"
 #include "ProceduralMeshComponent.h"
 #include "ProceduralPlatform.generated.h"
 

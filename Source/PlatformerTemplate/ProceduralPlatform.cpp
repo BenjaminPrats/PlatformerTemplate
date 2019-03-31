@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProceduralPlatform.h"
+
+#include "Runtime/Core/Public/Misc/CString.h"
 #include "Public/Misc/FileHelper.h"
 #include "Public/HAL/PlatformFileManager.h"
 #include "Public/GenericPlatform/GenericPlatformFile.h"
@@ -88,11 +90,9 @@ void AProceduralPlatform::CreateTriangle()
 	mesh->ContainsPhysicsTriMeshData(true);
 }
 
-void AProceduralPlatform::GetPolygonFromFile(const FString& fileName, TArray<FVector>& vertices, TArray<int32>& polygons)
+void AProceduralPlatform::GetPolygonFromFile(const FString& fileName, TArray<FVector>& vertices, TArray<int32>& triangles)
 {
 	FString saveDirectory = FPaths::GameSourceDir() + FString("../_externalAsset/Polygons");
-	FString textToSave = FString("Lorem ipsum");
-	bool allowOverwriting = false;
 
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -103,27 +103,71 @@ void AProceduralPlatform::GetPolygonFromFile(const FString& fileName, TArray<FVe
 	{
 		// Get relative file path
 		FString relativeFilePath = saveDirectory + "/" + fileName;
-		UE_LOG(LogTemp, Warning, TEXT("Sucess1"));
 		// Allow overwriting or file doesn't already exist
-		if (allowOverwriting || !FPlatformFileManager::Get().GetPlatformFile().FileExists(*relativeFilePath))
+		if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*relativeFilePath))
 		{
-			FFileHelper::SaveStringToFile(textToSave, *relativeFilePath);
-			UE_LOG(LogTemp, Warning, TEXT("Sucess2"));
+			// V_LOG(LogTemp, "The file doesn't exist!");
+			return;
+		}
+
+		TArray<FString> lines;
+		FFileHelper::LoadFileToStringArray(lines, *relativeFilePath);
+		const int32 startingLineOutsideVertices = 2;
+		const int32 nbOutsideVertices = FCString::Atoi(*lines[startingLineOutsideVertices - 1]);
+		const int32 startingLineInsideVertices = startingLineOutsideVertices + nbOutsideVertices + 2;
+		const int32 nbInsideVertices = FCString::Atoi(*lines[startingLineInsideVertices - 1]);
+		const int32 startingLineTriangles = startingLineInsideVertices + nbInsideVertices + 2;
+		const int32 nbTriangles = FCString::Atoi(*lines[startingLineTriangles - 1]);
+
+		// TODO: (Benjamin) Still need to take care of the inside vertices
+		TArray<FVector> verticesOut;
+
+		for (int32 i = startingLineOutsideVertices; i < startingLineOutsideVertices + nbOutsideVertices; ++i)
+		{
+			FString left, right;
+			lines[i].Split(TEXT(" "), &left, &right);
+			FVector vertex(FCString::Atof(*left), 0.f, FCString::Atof(*right));
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *vertex.ToString());
+			verticesOut.Add(vertex);
+		}
+		vertices = verticesOut; // TODO: (Benjamin) Need to be change if we add inside vertices later on
+		
+		for (int32 i = startingLineTriangles; i < startingLineTriangles + nbTriangles; ++i)
+		{
+			FString left, right1, right2;
+			lines[i].Split(TEXT(" "), &left, &right1);
+			triangles.Add(FCString::Atoi(*left));
+			right1.Split(TEXT(" "), &left, &right2);
+			triangles.Add(FCString::Atoi(*left));
+			triangles.Add(FCString::Atoi(*right2));
+
+			int32 j = i - startingLineTriangles;
+			UE_LOG(LogTemp, Warning, TEXT("%d %d %d"), triangles[j], triangles[j+1], triangles[j+2]);
 		}
 	}
 }
 
 void AProceduralPlatform::CreatePolygon()
 {
+	FString fileName("test1");
 	TArray<FVector> vertices;
-	TArray<int32> polygons;
-	FString fileName("testUnreal");
+	TArray<int32> triangles;
+	GetPolygonFromFile(fileName, vertices, triangles);
 
-	vertices.Add(FVector(0, 0, 0));
-	vertices.Add(FVector(0, 100, 0));
-	vertices.Add(FVector(0, 0, 100));
-	vertices.Add(FVector(0, 100, 100));
+	TArray<FVector> normals;
+	TArray<FVector2D> uv0;
+	TArray<FProcMeshTangent> tangents;
+	TArray<FLinearColor> verticesColors;
+	for (int32 i = 0; i < vertices.Num(); ++i)
+	{
+		normals.Add(FVector(0, 1, 0));
+		uv0.Add(FVector2D(vertices[i].X, vertices[i].Z)); // TODO: (Benjamin) Values of UVs are completely broken so need to be rework if used
+		tangents.Add(FProcMeshTangent(0, 0, 1));
+		verticesColors.Add(FLinearColor(0.75, 0.75, 0.75, 1.0));
+	}
 
-	GetPolygonFromFile(fileName, vertices, polygons);
+	mesh->CreateMeshSection_LinearColor(0, vertices, triangles, normals, uv0, verticesColors, tangents, true);
 
+	// Enable collision data
+	mesh->ContainsPhysicsTriMeshData(true);
 }
