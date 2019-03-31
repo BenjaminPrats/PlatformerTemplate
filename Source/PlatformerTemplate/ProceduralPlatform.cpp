@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProceduralPlatform.h"
+#include "Public/Misc/FileHelper.h"
+#include "Public/HAL/PlatformFileManager.h"
+#include "Public/GenericPlatform/GenericPlatformFile.h"
 
 // Sets default values
 AProceduralPlatform::AProceduralPlatform()
@@ -43,7 +46,7 @@ void AProceduralPlatform::PostActorCreated()
 void AProceduralPlatform::PostLoad()
 {
 	Super::PostLoad();
-	CreateTriangle();
+	CreatePolygon();
 }
 
 void AProceduralPlatform::CreateTriangle()
@@ -85,14 +88,42 @@ void AProceduralPlatform::CreateTriangle()
 	mesh->ContainsPhysicsTriMeshData(true);
 }
 
-void AProceduralPlatform::CreateTriangle()
+void AProceduralPlatform::GetPolygonFromFile(const FString& fileName, TArray<FVector>& vertices, TArray<int32>& polygons)
+{
+	FString saveDirectory = FPaths::GameSourceDir() + FString("../_externalAsset/Polygons");
+	FString textToSave = FString("Lorem ipsum");
+	bool allowOverwriting = false;
+
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+
+	// CreateDirectoryTree returns true if the destination
+	// directory existed prior to call or has been created
+	// during the call.
+	if (PlatformFile.CreateDirectoryTree(*saveDirectory))
+	{
+		// Get relative file path
+		FString relativeFilePath = saveDirectory + "/" + fileName;
+		UE_LOG(LogTemp, Warning, TEXT("Sucess1"));
+		// Allow overwriting or file doesn't already exist
+		if (allowOverwriting || !FPlatformFileManager::Get().GetPlatformFile().FileExists(*relativeFilePath))
+		{
+			FFileHelper::SaveStringToFile(textToSave, *relativeFilePath);
+			UE_LOG(LogTemp, Warning, TEXT("Sucess2"));
+		}
+	}
+}
+
+void AProceduralPlatform::CreatePolygon()
 {
 	TArray<FVector> vertices;
+	TArray<int32> polygons;
+	FString fileName("testUnreal");
+
 	vertices.Add(FVector(0, 0, 0));
 	vertices.Add(FVector(0, 100, 0));
 	vertices.Add(FVector(0, 0, 100));
 	vertices.Add(FVector(0, 100, 100));
 
-
+	GetPolygonFromFile(fileName, vertices, polygons);
 
 }

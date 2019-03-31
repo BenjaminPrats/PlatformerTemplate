@@ -1,0 +1,12 @@
+// Outside vertices
+4
+100.0 100.0
+-100.0 100.0
+-100.0 -100.0
+100.0 -100.0
+// Inside vertices
+0
+// Polygons
+2
+0 1 3
+1 2 3

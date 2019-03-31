@@ -17,6 +17,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UProceduralMeshComponent * mesh;
 
+	void GetPolygonFromFile(const FString& fileName, TArray<FVector>& vertices, TArray<int32>& polygons);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
