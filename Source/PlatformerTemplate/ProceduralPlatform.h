@@ -19,6 +19,7 @@ private:
 	UProceduralMeshComponent * mesh;
 
 	void GetPolygonFromFile(const FString& fileName, TArray<FVector>& vertices, TArray<int32>& polygons);
+	void Extrude(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector>& normals);
 
 protected:
 	// Called when the game starts or when spawned

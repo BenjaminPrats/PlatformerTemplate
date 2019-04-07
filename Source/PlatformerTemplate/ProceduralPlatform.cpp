@@ -145,10 +145,56 @@ void AProceduralPlatform::GetPolygonFromFile(const FString& fileName, TArray<FVe
 			UE_LOG(LogTemp, Warning, TEXT("%d %d %d"), triangles[j], triangles[j+1], triangles[j+2]);
 		}
 	}
+
+	// TODO: (Benjamin) Check for equal vertices, degenerative case?
+}
+
+void AProceduralPlatform::Extrude(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector>& normals)
+{
+	const int32 size2DShape = vertices.Num();
+	const int32 size3DMesh = size2DShape * 2; // << 1 e_e
+	const FVector translationVector = FVector(0.f, -100.f, 0.f);
+
+	// Extruded vertices == translated vertices in y
+	for (int i = 0; i < size2DShape; ++i)
+		vertices.Add(vertices[i] + translationVector);
+
+	// Triangles creations
+	// Global case
+	for (int32 i = 1; i < size2DShape; ++i)
+	{
+		// First triangle
+		triangles.Add(i);
+		triangles.Add(i - 1);
+		triangles.Add(size2DShape + i);
+		
+		// Second triangle
+		triangles.Add(size2DShape + i);
+		triangles.Add(i - 1);
+		triangles.Add(size2DShape + i - 1);
+	}
+	// Limit case
+	triangles.Add(size2DShape - 1);
+	triangles.Add(size3DMesh - 1);
+	triangles.Add(0);
+
+	triangles.Add(0);
+	triangles.Add(size3DMesh - 1);
+	triangles.Add(size2DShape);
+
+
+	// Normals
+	for (int32 i = 0; i < triangles.Num(); i += 3)
+	{
+		FVector n = FVector::CrossProduct(vertices[triangles[i+2]] - vertices[triangles[i+1]], vertices[triangles[i]] - vertices[triangles[i+1]]);
+		normals.Add(n.GetSafeNormal());
+	}
+
 }
 
 void AProceduralPlatform::CreatePolygon()
 {
+	// Read file and define the 2D polygon
 	FString fileName("test1");
 	TArray<FVector> vertices;
 	TArray<int32> triangles;
@@ -161,6 +207,14 @@ void AProceduralPlatform::CreatePolygon()
 	for (int32 i = 0; i < vertices.Num(); ++i)
 	{
 		normals.Add(FVector(0, 1, 0));
+	}
+
+	// Extrude the 2D shape
+	Extrude(vertices, triangles, normals);
+
+	// Fill up uv, tangent and color value
+	for (int32 i = 0; i < vertices.Num(); ++i)
+	{
 		uv0.Add(FVector2D(vertices[i].X, vertices[i].Z)); // TODO: (Benjamin) Values of UVs are completely broken so need to be rework if used
 		tangents.Add(FProcMeshTangent(0, 0, 1));
 		verticesColors.Add(FLinearColor(0.75, 0.75, 0.75, 1.0));
