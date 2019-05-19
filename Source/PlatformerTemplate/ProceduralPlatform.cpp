@@ -1,6 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#define REAL double // for the Triangle library
+
 #include "ProceduralPlatform.h"
+
+#include "../_externalLibs/TrianglePP/Includes/tpp_interface.hpp"
+#include "../_externalLibs/TrianglePP/Includes/dpoint.hpp"
+//#include "tpp_interface.hpp"
+
 
 #include "Runtime/Core/Public/Misc/CString.h"
 #include "Public/Misc/FileHelper.h"
@@ -224,4 +231,23 @@ void AProceduralPlatform::CreatePolygon()
 
 	// Enable collision data
 	mesh->ContainsPhysicsTriMeshData(true);
+}
+
+void AProceduralPlatform::TriangulatePoly(const TArray<FVector>& vertices, TArray<FVector>& triangles)
+{
+	using namespace tpp;
+
+	Delaunay::Point tempP;
+	std::vector<Delaunay::Point> v;
+	for (int i = 0; i < vertices.Num(); ++i)
+	{
+		tempP[0] = (double)vertices[i].X;
+		tempP[1] = (double)vertices[i].Z;
+		v.push_back(tempP);
+	}
+
+	Delaunay delobject = Delaunay::Delaunay(v);
+	delobject.Triangulate();
+
+
 }

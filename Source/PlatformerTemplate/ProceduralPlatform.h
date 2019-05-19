@@ -20,6 +20,7 @@ private:
 
 	void GetPolygonFromFile(const FString& fileName, TArray<FVector>& vertices, TArray<int32>& polygons);
 	void Extrude(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector>& normals);
+	void TriangulatePoly(const TArray<FVector>& vertices, TArray<FVector>& triangles);	
 
 protected:
 	// Called when the game starts or when spawned
